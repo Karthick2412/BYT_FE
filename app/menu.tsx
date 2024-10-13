@@ -83,7 +83,7 @@ const Menu = () => {
         </ScrollView>
 
         {/* Total Amount and Place Order Button */}
-        <View className="p-8 bg-grey shadow-md">
+        <View className="p-8 bg-white shadow-md">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-lg font-bold">Total Amount</Text>
             <Text className="text-lg">₹{totalAmount}</Text>

@@ -3,11 +3,14 @@ import React, { useState } from 'react';
 import { Link, router } from "expo-router";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { images } from "../../constants";
+import axios from 'axios';
+import env from '@/env';
 
 import FormField from "@/components/FormField";
 import CustomButton from "@/components/CustomButton"
 
 const SignIn = () => {
+  const apiBaseUrl = env.API_BASE_URL;
 
   const [isSubmitting, setSubmitting] = useState(false);
 
@@ -37,7 +40,10 @@ const SignIn = () => {
       // setIsLogged(true);
 
       // Alert.alert("Success", "User signed in successfully");
-      router.replace("/otp");
+      const response = await axios.post(`${apiBaseUrl}/otp/send`, {
+        phoneNumber:`+91${form.phoneNumber}`
+      });
+      router.push({ pathname: "/otp", params: { phoneNumber: form.phoneNumber } });
     } catch (error) {
       Alert.alert("Error", error.message);
     } finally {

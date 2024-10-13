@@ -1,9 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { View, TextInput, StyleSheet, Text, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
+import axios from 'axios';
+import env from '@/env';
 
 const OtpInput = () => {
+  const { phoneNumber } = useLocalSearchParams();
+  const apiBaseUrl = env.API_BASE_URL;
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = useRef([]);
   const [focusedIndex, setFocusedIndex] = useState(null);
@@ -45,20 +49,25 @@ const OtpInput = () => {
             },
             config: {}, // The request configuration that was used
           };
-          const response = mockAxiosResponse;
-
-    //   const response = await axios.post('https://example.com/api/verify-otp', {
-    //     otp: enteredOtp,
-    //   });
-
-      if (response.data.success) {
+          // const response = mockAxiosResponse;
+          
+          
+        const response = await axios.post(`${apiBaseUrl}/otp/validate`, {
+        phoneNumber:`+91${phoneNumber}`,
+        otpNumber: enteredOtp,
+        // otpNumber: "7286",
+        firstName:"Karthick",
+        lastName:"Chandrasekar"
+      });
+      
+      if (response.data.userSaveRes != null) {
         // If OTP is correct, navigate to Home screen
         router.replace("/home");
       } else {
         Alert.alert('Error', 'Invalid OTP. Please try again.');
       }
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      Alert.alert('Error', `Something went wrong. Please try again.${error}`);
     }
   };
 
