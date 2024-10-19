@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Image,Alert } from 'react-native';
 import React, { useState } from 'react';
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { images } from "../../constants";
 import axios from 'axios';
@@ -9,7 +9,10 @@ import env from '@/env';
 import FormField from "@/components/FormField";
 import CustomButton from "@/components/CustomButton"
 
-const SignIn = () => {
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const UserDetails = () => {
+    const { phoneNumber } = useLocalSearchParams();
   const apiBaseUrl = env.API_BASE_URL;
 
   const [isSubmitting, setSubmitting] = useState(false);
@@ -17,34 +20,27 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    phoneNumber: "",
+    firstName: "",
+    lastName: "",
   });
 
   const submit = async () => {
-    if (form.phoneNumber === "") {
-      Alert.alert("Error", "Please fill in all fields");
-    }
-
-    if (form.phoneNumber.length!=10) {
-      Alert.alert("Error", "Incorrect phonenumber");
-    }
-
+    
     setSubmitting(true);
     setLoading(true);
     try {
-      // await signIn(form.email, form.password);
-      // const result = await getCurrentUser();
-      // setUser(result);
-
-      // await sleep(60000); 
-
-      // setIsLogged(true);
-
-      // Alert.alert("Success", "User signed in successfully");
-      const response = await axios.post(`${apiBaseUrl}/otp/send`, {
-        phoneNumber:`+91${form.phoneNumber}`
+      const response = await axios.post(`${apiBaseUrl}/user/save`, {
+        firstName:`${form.firstName}`,
+        lastName:`${form.lastName}`,
+        phoneNumber:`+91${phoneNumber}`
       });
-      router.push({ pathname: "/otp", params: { phoneNumber: form.phoneNumber } });
+
+      if (response.data.userId != null) {
+        await AsyncStorage.setItem("userToken", response.data.userId);
+        router.replace("/home");
+      }else {
+        Alert.alert('Error', 'Account details not stored. Please try again.');
+      }
     } catch (error) {
       Alert.alert("Error", error.message);
     } finally {
@@ -65,19 +61,28 @@ const SignIn = () => {
             className="w-[130px] h-[50px]"
           />
           <Text className="text-2xl font-semibold text-white mt-8 font-psemibold">
-            Log in to BYT
+            User Details
           </Text>
-          
+
           <FormField
-            title="PhoneNumber"
-            value={form.phoneNumber}
-            handleChangeText={(e) => setForm({ ...form, phoneNumber: e })}
+            title="First name"
+            value={form.firstName}
+            handleChangeText={(e) => setForm({ ...form, firstName: e })}
             otherStyles="mt-7"
-            keyboardType="numeric"
+            keyboardType="text"
           />
 
+          <FormField
+            title="Last name"
+            value={form.lastName}
+            handleChangeText={(e) => setForm({ ...form, lastName: e })}
+            otherStyles="mt-7"
+            keyboardType="text"
+          />
+          
+
         <CustomButton
-            title="Get OTP"
+            title="Save"
             handlePress={submit}
             containerStyles="mt-7"
             isLoading={isSubmitting}
@@ -90,4 +95,4 @@ const SignIn = () => {
   )
 }
 
-export default SignIn
+export default UserDetails

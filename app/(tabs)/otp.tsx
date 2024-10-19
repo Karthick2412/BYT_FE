@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router, useLocalSearchParams } from "expo-router";
 import axios from 'axios';
 import env from '@/env';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OtpInput = () => {
   const { phoneNumber } = useLocalSearchParams();
@@ -36,34 +37,21 @@ const OtpInput = () => {
 
   const verifyOtp = async (enteredOtp) => {
     try {
-        const mockAxiosResponse = {
-            data: {
-              success: true,
-              message: 'OTP verified successfully',
-              token: 'sample-jwt-token-123456', // Could be something like an authentication token
-            },
-            status: 200,
-            statusText: 'OK',
-            headers: {
-              'content-type': 'application/json',
-            },
-            config: {}, // The request configuration that was used
-          };
-          // const response = mockAxiosResponse;
-          
-          
         const response = await axios.post(`${apiBaseUrl}/otp/validate`, {
         phoneNumber:`+91${phoneNumber}`,
         otpNumber: enteredOtp,
         // otpNumber: "7286",
-        firstName:"Karthick",
-        lastName:"Chandrasekar"
+        // firstName:`${firstName}`,
+        // lastName:`${lastName}`
       });
       
       if (response.data.userSaveRes != null) {
         // If OTP is correct, navigate to Home screen
+        await AsyncStorage.setItem("userToken", response.data.userSaveRes.userId);
         router.replace("/home");
-      } else {
+      } else if (response.data.message == "OTP is valid!") {
+        router.push({ pathname: "/user-details", params: { phoneNumber: phoneNumber } });
+      }else {
         Alert.alert('Error', 'Invalid OTP. Please try again.');
       }
     } catch (error) {
