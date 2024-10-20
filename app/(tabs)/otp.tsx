@@ -7,7 +7,7 @@ import env from '@/env';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OtpInput = () => {
-  const { phoneNumber } = useLocalSearchParams();
+  const { phoneNumber,validateType } = useLocalSearchParams();
   const apiBaseUrl = env.API_BASE_URL;
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = useRef([]);
@@ -40,18 +40,25 @@ const OtpInput = () => {
         const response = await axios.post(`${apiBaseUrl}/otp/validate`, {
         phoneNumber:`+91${phoneNumber}`,
         otpNumber: enteredOtp,
-        // otpNumber: "7286",
-        // firstName:`${firstName}`,
-        // lastName:`${lastName}`
+        validateType:validateType
       });
       
+      if (validateType =="user"){
       if (response.data.userSaveRes != null) {
         // If OTP is correct, navigate to Home screen
         await AsyncStorage.setItem("userToken", response.data.userSaveRes.userId);
         router.replace("/home");
       } else if (response.data.message == "OTP is valid!") {
         router.push({ pathname: "/user-details", params: { phoneNumber: phoneNumber } });
-      }else {
+      }
+    }else if (validateType == "company"){
+      if (response.data.getCompanyRes != null) {
+        await AsyncStorage.setItem("companyToken", response.data.getCompanyRes.companyId); // Store company token
+        router.replace("/company-home"); // Navigate to company home page
+      }else if (response.data.message == "OTP is valid!") {
+        router.push({ pathname: "/company-details", params: { phoneNumber: phoneNumber } });
+      }
+    } else {
         Alert.alert('Error', 'Invalid OTP. Please try again.');
       }
     } catch (error) {

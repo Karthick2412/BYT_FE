@@ -44,7 +44,7 @@ const SignIn = () => {
       const response = await axios.post(`${apiBaseUrl}/otp/send`, {
         phoneNumber:`+91${form.phoneNumber}`
       });
-      router.push({ pathname: "/otp", params: { phoneNumber: form.phoneNumber } });
+      router.push({ pathname: "/otp", params: { phoneNumber: form.phoneNumber,validateType:"user" } });
     } catch (error) {
       Alert.alert("Error", error.message);
     } finally {
